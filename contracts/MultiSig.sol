@@ -19,7 +19,8 @@ contract MultiSig {
     }
 
     modifier transactionExists(uint256 transactionId) {
-        require(transactionId < transactions.length, "Transaction does not exist");
+        uint256 transactionsLength = transactions.length;
+        require(transactionId < transactionsLength, "Transaction does not exist");
         _;
     }
 
@@ -55,23 +56,24 @@ contract MultiSig {
     }
 
     constructor(address[] memory _owners, uint256 _required) {
-        require(_owners.length > 0, "Owners required");
-        require(_required > 0 && _required <= _owners.length, "Invalid required number of owners");
         uint256 ownersLength = _owners.length;
+        require(ownersLength > 0, "Owners required");
+        require(_required > 0 && _required <= ownersLength, "Invalid required number of owners");
         for (uint256 i; i < ownersLength;) {
             address owner = _owners[i];
             require(owner != address(0), "Invalid owner");
             require(!isOwner[owner], "Owner is not unique");
             isOwner[owner] = true;
             owners.push(owner);
-            unchecked { i++; }
+            unchecked {i++;}
         }
         required = _required;
     }
 
     function submit(address _to, uint256 _amount, bytes calldata _data) external onlyOwner {
-        transactions.push(Transaction({ to: _to, amount: _amount, data: _data, executed: false }));
-        emit Submit(transactions.length - 1);
+        transactions.push(Transaction({to: _to, amount: _amount, data: _data, executed: false}));
+        uint256 transactionsLength = transactions.length;
+        emit Submit(transactionsLength - 1);
     }
 
     function approve(uint256 transactionId) external onlyOwner transactionExists(transactionId) notApproved(transactionId) notExecuted(transactionId) {
@@ -82,10 +84,8 @@ contract MultiSig {
     function _getApprovalCount(uint256 transactionId) private view returns (uint256 count) {
         uint256 ownersLength = owners.length;
         for (uint256 i; i < ownersLength;) {
-            if (approved[transactionId][owners[i]]) {
-                count++;
-            }
-            unchecked { i++; }
+            if (approved[transactionId][owners[i]]) count++;
+            unchecked {i++;}
         }
     }
 
