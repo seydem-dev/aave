@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 
 contract MultiSig {
 
-    event Deposit(address indexed ender, uint256 amount);
+    event Deposit(address indexed sender, uint256 amount);
     event Submit(uint256 indexed transactionId);
     event Approve(address indexed owner, uint256 indexed transactionId);
     event Revoke(address indexed owner, uint256 indexed transactionId);
@@ -49,7 +49,8 @@ contract MultiSig {
     constructor(address[] memory _owners, uint256 _required) {
         require(_owners.length > 0, "Owners required");
         require(_required > 0 && _required <= _owners.length, "Invalid required number of owners");
-        for (uint256 i; i < _owners.length;) {
+        uint256 ownersLength = _owners.length;
+        for (uint256 i; i < ownersLength;) {
             address owner = _owners[i];
             require(owner != address(0), "Invalid owner");
             require(!isOwner[owner], "Owner is not unique");
