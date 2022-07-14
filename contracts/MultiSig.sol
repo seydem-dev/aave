@@ -81,7 +81,7 @@ contract MultiSig {
     function _getApprovalCount(uint256 _transactionId) private view returns (uint256 count) {
         for (uint256 i; i < owners.length;) {
             if (approved[_transactionId][owners[i]]) {
-                count += 1;
+                count++;
             }
             unchecked { i++; }
         }
