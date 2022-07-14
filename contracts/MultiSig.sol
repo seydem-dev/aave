@@ -10,32 +10,32 @@ contract MultiSig {
     event Revoke(address indexed owner, uint256 indexed transactionId);
     event Execute(uint256 indexed transactionId);
 
-    address[] public owners;
-
     mapping(address => bool) public isOwner;
     mapping(uint256 => mapping(address => bool)) public approved;
-
-    uint256 public required;
 
     modifier onlyOwner {
         require(isOwner[msg.sender], "Not owner");
         _;
     }
 
-    modifier transactionExists(uint256 _transactionId) {
-        require(_transactionId < transactions.length, "Transaction does not exist");
+    modifier transactionExists(uint256 transactionId) {
+        require(transactionId < transactions.length, "Transaction does not exist");
         _;
     }
 
-    modifier notApproved(uint256 _transactionId) {
-        require(!approved[_transactionId][msg.sender], "Transaction already approved");
+    modifier notApproved(uint256 transactionId) {
+        require(!approved[transactionId][msg.sender], "Transaction already approved");
         _;
     }
 
-    modifier notExecuted(uint256 _transactionId) {
-        require(!transactions[_transactionId].executed, "Transaction already executed");
+    modifier notExecuted(uint256 transactionId) {
+        require(!transactions[transactionId].executed, "Transaction already executed");
         _;
     }
+
+    uint256 public required;
+
+    address[] public owners;
 
     struct Transaction {
         address to;
@@ -60,6 +60,10 @@ contract MultiSig {
         required = _required;
     }
 
+    fallback() external payable {
+        emit Deposit(msg.sender, msg.value);
+    }
+
     receive() external payable {
         emit Deposit(msg.sender, msg.value);
     }
@@ -69,32 +73,32 @@ contract MultiSig {
         emit Submit(transactions.length - 1);
     }
 
-    function approve(uint256 _transactionId) external onlyOwner transactionExists(_transactionId) notApproved(_transactionId) notExecuted(_transactionId) {
-        approved[_transactionId][msg.sender] = true;
-        emit Approve(msg.sender, _transactionId);
+    function approve(uint256 transactionId) external onlyOwner transactionExists(transactionId) notApproved(transactionId) notExecuted(transactionId) {
+        approved[transactionId][msg.sender] = true;
+        emit Approve(msg.sender, transactionId);
     }
 
-    function _getApprovalCount(uint256 _transactionId) private view returns (uint256 count) {
+    function _getApprovalCount(uint256 transactionId) private view returns (uint256 count) {
         for (uint256 i; i < owners.length;) {
-            if (approved[_transactionId][owners[i]]) {
+            if (approved[transactionId][owners[i]]) {
                 count++;
             }
             unchecked { i++; }
         }
     }
 
-    function execute(uint256 _transactionId) external transactionExists(_transactionId) notExecuted(_transactionId) {
-        require(_getApprovalCount(_transactionId) >= required, "Approvals less than required");
-        Transaction storage transaction = transactions[_transactionId];
+    function execute(uint256 transactionId) external transactionExists(transactionId) notExecuted(transactionId) {
+        require(_getApprovalCount(transactionId) >= required, "Approvals less than required");
+        Transaction storage transaction = transactions[transactionId];
         transaction.executed = true;
         (bool success, ) = transaction.to.call{value: transaction.amount}(transaction.data);
         require(success, "Transaction failed");
-        emit Execute(_transactionId);
+        emit Execute(transactionId);
     }
 
-    function revoke(uint256 _transactionId) external onlyOwner transactionExists(_transactionId) notExecuted(_transactionId) {
-        require(approved[_transactionId][msg.sender], "Transaction not approved");
-        approved[_transactionId][msg.sender] = false;
-        emit Revoke(msg.sender, _transactionId);
+    function revoke(uint256 transactionId) external onlyOwner transactionExists(transactionId) notExecuted(transactionId) {
+        require(approved[transactionId][msg.sender], "Transaction not approved");
+        approved[transactionId][msg.sender] = false;
+        emit Revoke(msg.sender, transactionId);
     }
 }
