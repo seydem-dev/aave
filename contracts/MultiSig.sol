@@ -46,6 +46,14 @@ contract MultiSig {
 
     Transaction[] public transactions;
 
+    fallback() external payable {
+        emit Deposit(msg.sender, msg.value);
+    }
+
+    receive() external payable {
+        emit Deposit(msg.sender, msg.value);
+    }
+
     constructor(address[] memory _owners, uint256 _required) {
         require(_owners.length > 0, "Owners required");
         require(_required > 0 && _required <= _owners.length, "Invalid required number of owners");
@@ -59,14 +67,6 @@ contract MultiSig {
             unchecked { i++; }
         }
         required = _required;
-    }
-
-    fallback() external payable {
-        emit Deposit(msg.sender, msg.value);
-    }
-
-    receive() external payable {
-        emit Deposit(msg.sender, msg.value);
     }
 
     function submit(address _to, uint256 _amount, bytes calldata _data) external onlyOwner {
