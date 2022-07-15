@@ -10,8 +10,8 @@ contract MultiSig {
     event Revoke(address indexed owner, uint256 indexed transactionId);
     event Execute(uint256 indexed transactionId);
 
-    mapping(address => bool) public isOwner;
-    mapping(uint256 => mapping(address => bool)) public approved;
+    mapping (address => bool) public isOwner;
+    mapping (uint256 => mapping(address => bool)) public approved;
 
     modifier onlyOwner {
         require(isOwner[msg.sender], "Not owner");
@@ -36,8 +36,6 @@ contract MultiSig {
 
     uint256 public required;
 
-    address[] public owners;
-
     struct Transaction {
         address to;
         uint256 amount;
@@ -46,6 +44,7 @@ contract MultiSig {
     }
 
     Transaction[] public transactions;
+    address[] public owners;
 
     fallback() external payable {
         emit Deposit(msg.sender, msg.value);
