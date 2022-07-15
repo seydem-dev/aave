@@ -11,7 +11,7 @@ contract MultiSig {
     event Execute(uint256 indexed transactionId);
 
     mapping (address => bool) public isOwner;
-    mapping (uint256 => mapping(address => bool)) public approved;
+    mapping (uint256 => mapping (address => bool)) public approved;
 
     modifier onlyOwner {
         require(isOwner[msg.sender], "Not owner");
