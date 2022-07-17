@@ -2,6 +2,18 @@
 
 pragma solidity ^0.8.0;
 
+error NotOwner();
+error TransactionDoesntExist();
+error AlreadyApproved();
+error AlreadyExecuted();
+error OwnersRequired();
+error InvalidOwnersNumber();
+error InvalidOwner();
+error NotUniqueOwner();
+error ApprovalsLessThanRequired();
+error TransactionFailed();
+error TransactionNotApproved();
+
 contract MultiSig {
 
     event Deposit(address indexed sender, uint256 amount);
@@ -14,23 +26,23 @@ contract MultiSig {
     mapping (uint256 => mapping (address => bool)) public approved;
 
     modifier onlyOwner {
-        require(isOwner[msg.sender], "Not owner");
+        if (!isOwner[msg.sender]) revert NotOwner();
         _;
     }
 
     modifier transactionExists(uint256 transactionId) {
         uint256 transactionsLength = transactions.length;
-        require(transactionId < transactionsLength, "Transaction does not exist");
+        if (transactionId > transactionsLength || transactionId == transactionsLength) revert TransactionDoesntExist();
         _;
     }
 
     modifier notApproved(uint256 transactionId) {
-        require(!approved[transactionId][msg.sender], "Transaction already approved");
+        if (approved[transactionId][msg.sender]) revert AlreadyApproved();
         _;
     }
 
     modifier notExecuted(uint256 transactionId) {
-        require(!transactions[transactionId].executed, "Transaction already executed");
+        if (transactions[transactionId].executed) revert AlreadyExecuted();
         _;
     }
 
@@ -52,12 +64,12 @@ contract MultiSig {
 
     constructor(address[] memory _owners, uint256 _required) {
         uint256 ownersLength = _owners.length;
-        require(ownersLength > 0, "Owners required");
-        require(_required > 0 && _required <= ownersLength, "Invalid required number of owners");
+        if (ownersLength == 0) revert OwnersRequired();
+        if (_required > ownersLength) revert InvalidOwnersNumber();
         for (uint256 i; i < ownersLength;) {
             address owner = _owners[i];
-            require(owner != address(0), "Invalid owner");
-            require(!isOwner[owner], "Owner is not unique");
+            if (owner == address(0)) revert InvalidOwner();
+            if (isOwner[owner]) revert NotUniqueOwner();
             isOwner[owner] = true;
             owners.push(owner);
             unchecked {i++;}
@@ -85,16 +97,16 @@ contract MultiSig {
     }
 
     function execute(uint256 transactionId) external transactionExists(transactionId) notExecuted(transactionId) {
-        require(_getApprovalCount(transactionId) >= required, "Approvals less than required");
+        if (_getApprovalCount(transactionId) < required) revert ApprovalsLessThanRequired();
         Transaction storage transaction = transactions[transactionId];
         transaction.executed = true;
         (bool success, ) = transaction.to.call{value: transaction.amount}(transaction.data);
-        require(success, "Transaction failed");
+        if (!success) revert TransactionFailed();
         emit Execute(transactionId);
     }
 
     function revoke(uint256 transactionId) external onlyOwner transactionExists(transactionId) notExecuted(transactionId) {
-        require(approved[transactionId][msg.sender], "Transaction not approved");
+        if (!approved[transactionId][msg.sender]) revert TransactionNotApproved();
         approved[transactionId][msg.sender] = false;
         emit Revoke(msg.sender, transactionId);
     }
