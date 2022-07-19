@@ -46,7 +46,7 @@ contract MultiSig {
         _;
     }
 
-    uint256 public required;
+    uint256 public immutable required;
 
     struct Transaction {
         address to;
