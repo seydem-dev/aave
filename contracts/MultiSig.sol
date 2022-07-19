@@ -58,10 +58,6 @@ contract MultiSig {
     Transaction[] public transactions;
     address[] public owners;
 
-    receive() external payable {
-        emit Deposit(msg.sender, msg.value);
-    }
-
     constructor(address[] memory _owners, uint256 _required) {
         uint256 ownersLength = _owners.length;
         if (ownersLength == 0) revert OwnersRequired();
@@ -109,5 +105,9 @@ contract MultiSig {
         if (!approved[transactionId][msg.sender]) revert TransactionNotApproved();
         approved[transactionId][msg.sender] = false;
         emit Revoke(msg.sender, transactionId);
+    }
+
+    receive() external payable {
+        emit Deposit(msg.sender, msg.value);
     }
 }
