@@ -48,6 +48,8 @@ contract MultiSig {
         _;
     }
 
+    address[] public owners;
+
     struct Transaction {
         address to;
         uint256 amount;
@@ -56,7 +58,6 @@ contract MultiSig {
     }
 
     Transaction[] public transactions;
-    address[] public owners;
 
     constructor(address[] memory _owners, uint256 _required) {
         uint256 ownersLength = _owners.length;
