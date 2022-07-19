@@ -22,6 +22,8 @@ contract MultiSig {
     event Revoke(address indexed owner, uint256 indexed transactionId);
     event Execute(uint256 indexed transactionId);
 
+    uint256 public immutable required;
+
     mapping (address => bool) public isOwner;
     mapping (uint256 => mapping (address => bool)) public approved;
 
@@ -45,8 +47,6 @@ contract MultiSig {
         if (transactions[transactionId].executed) revert AlreadyExecuted();
         _;
     }
-
-    uint256 public immutable required;
 
     struct Transaction {
         address to;
