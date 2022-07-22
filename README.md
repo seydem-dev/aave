@@ -1,117 +1,107 @@
 # Multi Signature Wallet
-**A multi signature wallet is a wallet which acts just like an externally owned account, but with the (very important) feature that multiple owners and therefore multiple signatures, hence the name "multi signature", are required to pass a transaction. This is a decentralized way of having a wallet, because it needs multiple people to transact.**
+**A multi signature wallet is a wallet which acts just like a normal wallet, but with the very important and secure feature that multiple signatures are required to confirm a transaction, hence the name "multi signature". This is a decentralized way of signing transactions, but don't forget, the owner of these wallets can be the same person. So it is a protection for entire decentralized entities (e.g. DAOs) and additionally for individuals.**
 
 ```
 Deposit
 ```
-*f*
+*Fired when ETH is deposited into the multi sig wallet.*
 
 ```
 Submit
 ```
-*f*
+*Fired when a transaction is submitted, waiting for other owners to approve.*
 
 ```
 Approve
 ```
-*f*
+*Fired when owners have approved the transaction.*
 
 ```
 Revoke
 ```
-*f*
+*Fired when owners have changed changed their mind and decided to revoke the transaction.*
 
 ```
 Execute
 ```
-*f*
+*Fired once there's a sufficient amount of approvals.*
 
 ```
 owners
 ```
-*f*
+*All owners of the multi signature wallet.*
 
 ```
 isOwner
 ```
-*f*
+*Checks if the message sender is an owner. Returns true if message sender is owner, otherwise false.*
 
 ```
 approved
 ```
-*f*
+*Mapping for approving transactions.*
 
 ```
 required
 ```
-*f*
+*Number of approvals required before a transaction can be executed.*
 
 ```
 onlyOwner
 ```
-*f*
+*Checks if message sender is owner, throws if not.*
 
 ```
 transactionExists
 ```
-*f*
+*Checks if transaction exists or not. If `transactionId` is less than `transactions.length`*
 
 ```
 notApproved
 ```
-*f*
+*Checks if transaction is not approved by msg.sender, throws if it is.*
 
 ```
 notExecuted
 ```
-*f*
+*Checks if transaction was already executed, throws if it was.*
 
 ```
 Transaction
 ```
-*f*
+*Stores the transaction (details).*
 
 ```
 transactions
 ```
-*f*
-
-```
-constructor()
-```
-*f*
-
-```
-fallback()
-```
-*f*
+*List of all the transactions.*
 
 ```
 receive()
 ```
-*f*
+*Enables addresses to deposit ETH by directly funding the smart contract.*
 
 ```
 submit()
 ```
-*f*
+*Function only callable by owners to submit a transaction.*
 
 ```
 approve()
 ```
-*f*
+*Allows only owners to approve transactions. Must neither be approved nor executed before it is called.*
 
 ```
 _getApprovalCount
 ```
-*f*
+*Counter of approvals made.*
 
 ```
 execute()
 ```
-*f*
+*Executes given transaction, only callable by the owners. Transaction must exist and couldn't have previously been executed.*
 
 ```
 revoke()
 ```
-*f*
+*Function that undoes / cancels an approved transaction. Transaction must exist and couldn't have previously been executed.*
