@@ -62,7 +62,7 @@ contract MultiSig {
     constructor(address[] memory _owners, uint256 _required) {
         uint256 ownersLength = _owners.length;
         if (ownersLength == 0) revert OwnersRequired();
-        if (_required > ownersLength) revert InvalidOwnersNumber();
+        if (_required == 0 || _required > ownersLength) revert InvalidOwnersNumber();
         for (uint256 i; i < ownersLength;) {
             address owner = _owners[i];
             if (owner == address(0)) revert InvalidOwner();
@@ -98,7 +98,7 @@ contract MultiSig {
         Transaction storage transaction = transactions[transactionId];
         transaction.executed = true;
         (bool success, ) = transaction.to.call{value: transaction.amount}(transaction.data);
-        if (!success) revert TransactionFailed();
+        if (success) revert TransactionFailed();
         emit Execute(transactionId);
     }
 
